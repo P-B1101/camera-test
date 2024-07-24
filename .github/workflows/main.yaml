@@ -9,7 +9,7 @@ env:
   JAVA_VERSION: "11.x"
   FLUTTER_VERSION: "3.22.1"
   FLUTTER_CHANNEL: "stable"
-  PROPERTIES_PATH: "./android/key.properties"
+  PROPERTIES_PATH: "./android/keystore.properties"
 
 jobs:
   flutter_test:
@@ -31,7 +31,7 @@ jobs:
           echo storePassword=\${{ secrets.KEY_PASSWORD }} >> ${{env.PROPERTIES_PATH}}
           echo keyAlias=\${{ secrets.KEY_ALIAS }} >> ${{env.PROPERTIES_PATH}}
       # Decoding base64 key into a file
-      - run: echo "${{ secrets.KEYSTORE2 }}" | base64 --decode > android/app/key.jks
+      - run: echo "${{ secrets.KEYSTORE2 }}" | base64 --decode > android/key/key.jks
 
       # Get dependencies and make assigned appbundle
       - run: | 
