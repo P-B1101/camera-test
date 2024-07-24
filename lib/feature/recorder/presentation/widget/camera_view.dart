@@ -210,10 +210,13 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
 
   void _initCamera() async {
     try {
+      Logger.instance.log('Getting available Cameras');
       final cameras = await availableCameras();
+      Logger.instance.log('Found ${cameras.length} cameras');
       for (var camera in cameras) {
         if (camera.lensDirection == CameraLensDirection.back) {
-          _initializeCameraController(camera);
+          Logger.instance.log('Find back camera. start initializing it.');
+          await _initializeCameraController(camera);
           return;
         }
       }
@@ -232,15 +235,20 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       enableAudio: false,
       fps: 60,
     );
-    _controller = cameraController;
+    Logger.instance.log(
+      'Camera setting  ->  ${cameraController.mediaSettings.toString()}',
+    );
     try {
       await cameraController.initialize();
+      Logger.instance.log('Camera initialized successfully');
       cameraController.addListener(() {
         // if (mounted) {
         //   setState(() {});
         // }
         if (cameraController.value.hasError) {
           context.read<CameraControllerCubit>().cameraFailed();
+          Logger.instance
+              .log('Camera Error: ${cameraController.value.errorDescription}');
         }
       });
     } on CameraException catch (e) {
@@ -257,6 +265,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       context.read<CameraControllerCubit>().cameraFailed();
     }
     if (!mounted) return;
+    _controller = cameraController;
     context.read<CameraControllerCubit>().cameraInitialized();
   }
 
