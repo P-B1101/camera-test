@@ -36,10 +36,10 @@ jobs:
       # Get dependencies and make assigned appbundle
       - run: | 
           flutter pub get
-          flutter build appbundle
+          flutter build apk
       # Make appbundle downloadable
       - name: Upload artefato
         uses: actions/upload-artifact@v2
         with:
-          name: appbundle
+          name: apk
           path: build/app/outputs/bundle/release
