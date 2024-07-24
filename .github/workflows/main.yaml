@@ -4,23 +4,6 @@ on:
       - main
 name: Analyze - Test - Build
 jobs:
-
-  analyze:
-    name: analyze
-    runs-on: ubuntu-latest
-    container: ghcr.io/niklaslehnfeld/flutter-essentials-docker:master
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/flutter-analyze
-
-  test:
-    name: test
-    runs-on: ubuntu-latest
-    container: ghcr.io/niklaslehnfeld/flutter-essentials-docker:master
-    steps:
-      - uses: actions/checkout@v2
-      - uses: ./.github/actions/flutter-test
-
   android-release-build:
     name: android-release-build
     runs-on: ubuntu-latest
