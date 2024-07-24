@@ -2,8 +2,9 @@ on:
   push:
     branches:
       - main
-name: Analyze - Test - Build
+name: Build
 jobs:
+
   android-release-build:
     name: android-release-build
     runs-on: ubuntu-latest
