@@ -1,0 +1,5 @@
+{
+    "app_name": "iClassifier Recorder",
+    "initializing_camera": "Initializing camera ...",
+    "camera_failed": "Camera failed to load!!!"
+}
