@@ -1,54 +1,45 @@
+name: main
+
 on:
   push:
     branches:
       - main
-name: Build
+
+env:
+  JAVA_VERSION: "11.x"
+  FLUTTER_VERSION: "3.22.1"
+  FLUTTER_CHANNEL: "stable"
+  PROPERTIES_PATH: "./android/key.properties"
+
 jobs:
-
-  android-release-build:
-    name: android-release-build
+  flutter_test:
+    name: Run Flutter assigned build appbundle
     runs-on: ubuntu-latest
-    container: ghcr.io/niklaslehnfeld/flutter-essentials-docker:master
     steps:
       - uses: actions/checkout@v2
-      - uses: NiklasLehnfeld/flutter-android-build-action@v1
-        id: android-build
+      - uses: actions/setup-java@v1
         with:
-          release: true
-          keystore: ${{ secrets.KEYSTORE }}
-          keystore-pwd: "${{ secrets.NETZPOLITIK_KEYSTORE_PWD }}"
-          key-pwd: "${{ secrets.NETZPOLITIK_KEY_PWD }}"
-      - name: Archive APK
-        uses: actions/upload-artifact@v2
+          java-version: ${{env.JAVA_VERSION}}
+      - uses: subosito/flutter-action@v1
         with:
-          name: release-apk
-          path: ${{ steps.android-build.outputs.apk-path }}
-      - name: Archive AAB
-        uses: actions/upload-artifact@v2
-        with:
-          name: release-aab
-          path: ${{ steps.android-build.outputs.aab-path }}
+          channel: ${{env.FLUTTER_CHANNEL}}
+          flutter-version: ${{env.FLUTTER_VERSION}}
 
-  create-github-release:
-    name: create-github-release
-    runs-on: ubuntu-latest
-    needs: [android-release-build]
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      # Creating the key.properties file
+      - run: |
+          echo keyPassword=\${{ secrets.KEY_STORE }} > ${{env.PROPERTIES_PATH}}
+          echo storePassword=\${{ secrets.KEY_PASSWORD }} >> ${{env.PROPERTIES_PATH}}
+          echo keyAlias=\${{ secrets.KEY_ALIAS }} >> ${{env.PROPERTIES_PATH}}
+      # Decoding base64 key into a file
+      - run: echo "${{ secrets.KEYSTORE2 }}" | base64 --decode > android/app/key.jks
+
+      # Get dependencies and make assigned appbundle
+      - run: | 
+          flutter pub get
+          flutter build appbundle
+      # Make appbundle downloadable
+      - name: Upload artefato
+        uses: actions/upload-artifact@v2
         with:
-          name: release-apk
-      - uses: actions/download-artifact@v2
-        with:
-          name: release-aab
-      - id: version
-        uses: NiklasLehnfeld/flutter-version-number-action@v1
-      - uses: marvinpinto/action-automatic-releases@latest
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          prerelease: false
-          automatic_release_tag: ${{ steps.version.outputs.version-number }}
-          title: ${{ steps.version.outputs.version-number }}
-          files: |
-            *.apk
-            *.aab
+          name: appbundle
+          path: build/app/outputs/bundle/release
