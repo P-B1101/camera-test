@@ -238,6 +238,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
     Logger.instance.log(
       'Camera setting  ->  ${cameraController.mediaSettings.toString()}',
     );
+    _controller = cameraController;
     try {
       await cameraController.initialize();
       Logger.instance.log('Camera initialized successfully');
@@ -265,17 +266,16 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       context.read<CameraControllerCubit>().cameraFailed();
     }
     if (!mounted) return;
-    _controller = cameraController;
     context.read<CameraControllerCubit>().cameraInitialized();
   }
 
   void _handleBtnClick() {
     final isRecording = context.read<CameraControllerCubit>().state.isRecording;
     if (isRecording) {
-      _startVideoRecording();
+      _stopVideoRecording();
       return;
     }
-    _stopVideoRecording();
+    _startVideoRecording();
   }
 
   Future<void> _startVideoRecording() async {
