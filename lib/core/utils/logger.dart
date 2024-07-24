@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:rxdart/subjects.dart';
 
 final class Logger {
@@ -11,7 +12,9 @@ final class Logger {
   final StringBuffer _buffer = StringBuffer();
 
   void log(Object message) {
-    _buffer.writeln(message.toString());
+    DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+    final finalData = '${dateFormat.format(DateTime.now())} ~> $message';
+    _buffer.writeln(finalData);
     _controller.add(_buffer.toString());
   }
 
