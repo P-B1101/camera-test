@@ -1,5 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:camera_test_app/core/utils/logger.dart';
+import 'package:camera_test_app/core/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:go_router/go_router.dart';
@@ -14,7 +15,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
+  int _fps = 60;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +53,8 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 8),
               const Divider(),
               const SizedBox(height: 8),
+              Center(child: _fpsInputWidget),
+              const SizedBox(height: 8),
               Center(child: _startRecordingBtn),
             ],
           ),
@@ -60,13 +63,27 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget get _fpsInputWidget => SizedBox(
+        width: 300,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: TextField(
+            onChanged: (value) => _fps = int.tryParse(value) ?? _fps,
+            textAlign: TextAlign.center,
+            decoration: const InputDecoration(
+              hintText: 'Enter FPS: default is ${Utils.defaultFPS}',
+            ),
+          ),
+        ),
+      );
+
   Widget get _startRecordingBtn => FilledButton.tonal(
         onPressed: _startClick,
         child: const Text('Start'),
       );
 
   void _startClick() async {
-    final result = await context.push('/${RecorderPage.path}');
+    final result = await context.push('/${RecorderPage.path}/$_fps');
     if (!mounted) return;
     if (result is! XFile) {
       Logger.instance.log('Recording result is empty');

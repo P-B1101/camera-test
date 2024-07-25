@@ -17,8 +17,9 @@ class AppRouter {
             builder: (context, state) => const HomePage(),
             routes: [
               GoRoute(
-                path: RecorderPage.path,
-                builder: (context, state) => const RecorderPage(),
+                path: '${RecorderPage.path}/:fps',
+                builder: (context, state) => RecorderPage(
+                    fps: int.tryParse(state.pathParameters['fps'] ?? '')),
               ),
             ],
           ),

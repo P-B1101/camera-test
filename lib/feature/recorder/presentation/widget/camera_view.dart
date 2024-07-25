@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:camera/camera.dart';
 import 'package:camera_test_app/core/utils/extensions.dart';
+import 'package:camera_test_app/feature/recorder/presentation/widget/fps_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -17,8 +18,10 @@ typedef VideoSavedCallback = void Function(XFile file);
 
 class CameraView extends StatefulWidget {
   final VideoSavedCallback onVideoSaved;
+  final int fps;
   const CameraView._({
     required this.onVideoSaved,
+    required this.fps,
   });
 
   @override
@@ -26,6 +29,7 @@ class CameraView extends StatefulWidget {
 
   static Widget provider({
     required VideoSavedCallback onVideoSaved,
+    required int fps,
   }) =>
       MultiBlocProvider(
         providers: [
@@ -33,7 +37,7 @@ class CameraView extends StatefulWidget {
             create: (context) => getIt<CameraControllerCubit>(),
           )
         ],
-        child: CameraView._(onVideoSaved: onVideoSaved),
+        child: CameraView._(onVideoSaved: onVideoSaved, fps: fps),
       );
 }
 
@@ -122,29 +126,51 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
         ),
       );
 
-  Widget get _cameraWidget => _controller != null &&
-          _controller!.value.isInitialized
-      ? AspectRatio(
-          aspectRatio: 1 / _controller!.value.aspectRatio,
-          child: CameraPreview(
-            _controller!,
-            child: BlocBuilder<CameraControllerCubit, CameraControllerState>(
-              buildWhen: (previous, current) =>
-                  previous.isRecording || current.isRecording,
-              builder: (context, state) => state.isRecording
-                  ? const Align(
-                      alignment: AlignmentDirectional.topStart,
-                      child: Padding(
-                        padding:
-                            EdgeInsets.symmetric(vertical: 12, horizontal: 18),
-                        child: RecordingWidget(),
-                      ),
-                    )
-                  : const SizedBox(),
-            ),
-          ),
-        )
-      : const SizedBox.expand();
+  Widget get _cameraWidget =>
+      _controller != null && _controller!.value.isInitialized
+          ? AspectRatio(
+              aspectRatio: 1 / _controller!.value.aspectRatio,
+              child: CameraPreview(
+                _controller!,
+                child: Stack(
+                  children: [
+                    BlocBuilder<CameraControllerCubit, CameraControllerState>(
+                      buildWhen: (previous, current) =>
+                          previous.isRecording != current.isRecording,
+                      builder: (context, state) => state.isRecording
+                          ? const Align(
+                              alignment: AlignmentDirectional.topStart,
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 18,
+                                ),
+                                child: RecordingWidget(),
+                              ),
+                            )
+                          : const SizedBox(),
+                    ),
+                    BlocBuilder<CameraControllerCubit, CameraControllerState>(
+                      buildWhen: (previous, current) =>
+                          previous.fps != current.fps,
+                      builder: (context, state) => state.fps > 0
+                          ? Align(
+                              alignment: AlignmentDirectional.topEnd,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                  horizontal: 18,
+                                ),
+                                child: FpsWidget(fps: state.fps),
+                              ),
+                            )
+                          : const SizedBox(),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : const SizedBox.expand();
 
   Widget get _failureWidget => Container(
         width: double.infinity,
@@ -233,7 +259,8 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       cameraDesc,
       ResolutionPreset.veryHigh,
       enableAudio: false,
-      fps: 60,
+      fps: widget.fps,
+      // videoBitrate: widget.fps * 100000,
     );
     Logger.instance.log(
       'Camera setting  ->  ${cameraController.mediaSettings.toString()}',
@@ -250,6 +277,12 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
           context.read<CameraControllerCubit>().cameraFailed();
           Logger.instance
               .log('Camera Error: ${cameraController.value.errorDescription}');
+          return;
+        }
+        if (cameraController.mediaSettings.fps != null) {
+          context
+              .read<CameraControllerCubit>()
+              .setFps(cameraController.mediaSettings.fps!);
         }
       });
     } on CameraException catch (e) {

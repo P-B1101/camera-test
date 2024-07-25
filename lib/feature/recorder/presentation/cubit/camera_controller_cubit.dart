@@ -17,4 +17,6 @@ class CameraControllerCubit extends Cubit<CameraControllerState> {
 
   void updateIsRecording(bool isRecording) =>
       emit(state.copyWith(isRecording: isRecording));
+
+  void setFps(int fps) => emit(state.copyWith(fps: fps));
 }

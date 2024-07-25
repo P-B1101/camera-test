@@ -5,8 +5,10 @@ import '../widget/camera_view.dart';
 
 class RecorderPage extends StatefulWidget {
   static const path = 'recorder';
+  final int? fps;
   const RecorderPage({
     super.key,
+    required this.fps,
   });
 
   @override
@@ -14,14 +16,15 @@ class RecorderPage extends StatefulWidget {
 }
 
 class _RecorderPageState extends State<RecorderPage> {
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
-        child: CameraView.provider(onVideoSaved: _onVideoSaved),
+        child: CameraView.provider(
+          onVideoSaved: _onVideoSaved,
+          fps: widget.fps ?? 60,
+        ),
       ),
     );
   }
