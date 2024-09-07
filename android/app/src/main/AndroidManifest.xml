@@ -1,4 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-feature
+    android:name="android.hardware.camera"
+    android:required="true"/>
+    
     <application
         android:label="camera_test_app"
         android:name="${applicationName}"

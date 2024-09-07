@@ -261,6 +261,7 @@ class _CameraViewState extends State<CameraView> with WidgetsBindingObserver {
       enableAudio: false,
       fps: widget.fps,
       // videoBitrate: widget.fps * 100000,
+      // videoBitrate: 10000000,
     );
     Logger.instance.log(
       'Camera setting  ->  ${cameraController.mediaSettings.toString()}',
